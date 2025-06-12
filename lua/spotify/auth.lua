@@ -1,5 +1,6 @@
 local M = {}
 local uv = vim.loop or vim.uv
+local spotify_auth = require("spotify.spotify-auth")
 local cache_dir = vim.fn.stdpath('cache') .. '\\spotify.nvim'
 local token_path = cache_dir .. '\\token_cache.json'
 local secrets_path = cache_dir .. '\\secrets.json'
@@ -33,13 +34,24 @@ local function get_secrets()
 end
 
 local function save_token_to_cache(token_data)
-    token_data.created_at = os.time() -- Adiciona timestamp atual
-    local cache_path = get_token_path()
-    local file = io.open(cache_path, 'w')
+    local file = io.open(token_path, 'w')
     if file then
-        file:write(vim.json.encode(token_data))
+        file:write(token_data)
         file:close()
     end
+end
+
+local function on_success(token_data)
+    vim.notify("🔑 Token válido até: " .. os.date("%Y-%m-%d %H:%M:%S", token_data.expires_in + os.time()),
+        vim.log.levels.INFO)
+    vim.notify("🔑 Token: " .. token_data.access_token, vim.log.levels.INFO)
+    vim.notify("🔑 Tipo de token: " .. token_data.token_type, vim.log.levels.INFO)
+    vim.notify("🔑 Expira em: " .. os.date("%Y-%m-%d %H:%M:%S", token_data.expires_in + os.time()),
+        vim.log.levels.INFO)
+    vim.notify("🔑 Data de criação: " .. os.date("%Y-%m-%d %H:%M:%S", token_data.created_at),
+        vim.log.levels.INFO)
+    vim.notify("🔑 Data de expiração: " .. os.date("%Y-%m-%d %H:%M:%S", token_data.expires_in + os.time()),
+        vim.log.levels.INFO)
 end
 
 function M.get_access_token(callback)
@@ -50,80 +62,20 @@ function M.get_access_token(callback)
         return
     end
 
-    local script_path = debug.getinfo(1, "S").source:sub(2):match("(.*[/\\])")
-    script_path = vim.fn.fnamemodify(script_path, ":p:h:h:h")
-    script_path = script_path .. "/scripts/spotify-auth.js"
-
-    script_path = script_path:gsub("/", "\\")
-
     local secrets = get_secrets()
-    local cmd = {
-        "node",
-        script_path,
-        secrets.clientId or "",
-        secrets.clientSecret or "",
-        "http://127.0.0.1:8888/callback"
-    }
-
-    vim.notify("cmd: " .. table.concat(cmd, " "), vim.log.levels.INFO)
-
-    local stdout = uv.new_pipe(false)
-    local stderr = uv.new_pipe(false)
-
-    local handle
-    local output = {}
-
-    handle = uv.spawn("node", {
-        args = {
-            script_path,
-            secrets.clientId or "",
-            secrets.clientSecret or "",
-            "http://127.0.0.1:8888/callback"
-        },
-        stdio = { nil, stdout, stderr }
-    }, function(code, signal)
-        stdout:read_stop()
-        stderr:read_stop()
-        stdout:close()
-        stderr:close()
-        if handle then handle:close() end
-
-        if code ~= 0 then
-            vim.notify("❌ Falha na autenticação (código: " .. code .. ")", vim.log.levels.ERROR)
-            callback(nil)
-            return
-        end
-
-        local full_output = table.concat(output)
-        local success, json = pcall(vim.json.decode, full_output)
-
-        if success and json and json.access_token then
-            json.expires_in = json.expires_in or 3600
+    spotify_auth.authenticate(secrets.clientId, secrets.clientSecret, function(token_data, response)
+        vim.notify("resposta", vim.log.levels.INFO)
+        vim.notify(vim.inspect(response), vim.log.levels.INFO)
+        if token_data then
+            token_data.created_at = os.time()
+            local json = vim.json.encode(token_data)
             save_token_to_cache(json)
             vim.notify("🔑 Autenticação com Spotify concluída", vim.log.levels.INFO)
-            callback(json)
+            vim.notify("✅ Token válido até: " .. os.date("%Y-%m-%d %H:%M:%S", token_data.expires_in + os.time()),
+                vim.log.levels.INFO)
         else
-            vim.notify("json: " .. vim.inspect(json), vim.log.levels.INFO)
-            vim.notify("❌ Resposta inválida do Spotify: " .. (full_output:gsub("%s+", " "):sub(1, 100)),
-                vim.log.levels.ERROR)
-            callback(nil)
+            vim.notify("❌ Falha ao autenticar", vim.log.levels.ERROR)
         end
-    end)
-
-    if not handle then
-        vim.notify("❌ Falha ao iniciar processo de autenticação", vim.log.levels.ERROR)
-        callback(nil)
-        return
-    end
-
-    stdout:read_start(function(err, data)
-        if err then return end
-        if data then table.insert(output, data) end
-    end)
-
-    stderr:read_start(function(err, data)
-        if err then return end
-        if data then vim.notify("⚠️ Spotify Auth: " .. data, vim.log.levels.WARN) end
     end)
 end
 

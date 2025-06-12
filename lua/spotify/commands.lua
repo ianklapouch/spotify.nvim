@@ -63,7 +63,7 @@ local function authenticate()
     hidden = true
   })
 
-  if clientId == nil or clientSecret == nil then 
+  if clientId == nil or clientSecret == nil then
     vim.notify("❌ Falha ao autenticar", vim.log.levels.ERROR)
     return
   end
