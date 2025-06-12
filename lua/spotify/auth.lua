@@ -54,12 +54,11 @@ local function on_success(token_data)
         vim.log.levels.INFO)
 end
 
-function M.get_access_token(callback)
+function M.get_access_token()
     local cached_token = load_cached_token()
     if cached_token then
         vim.notify("✅ Usando token do cache", vim.log.levels.INFO)
-        callback(cached_token)
-        return
+        return cached_token
     end
 
     local secrets = get_secrets()
@@ -73,6 +72,7 @@ function M.get_access_token(callback)
             vim.notify("🔑 Autenticação com Spotify concluída", vim.log.levels.INFO)
             vim.notify("✅ Token válido até: " .. os.date("%Y-%m-%d %H:%M:%S", token_data.expires_in + os.time()),
                 vim.log.levels.INFO)
+            return token_data
         else
             vim.notify("❌ Falha ao autenticar", vim.log.levels.ERROR)
         end
