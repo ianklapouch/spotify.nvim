@@ -1,8 +1,12 @@
-local M = {}
+local CredentialsHandler = require("spotify.credentials.handler")
+local CommandsHandler = require("spotify.commands.handler")
 
-function M.setup()
-    require("spotify.auth").setup()
-    require("spotify.commands").register_commands()
+CommandsHandler.register_commands()
+
+if not CredentialsHandler.credentials_file_exists() then
+    vim.notify(
+        "Incomplete configuration, enter your Client ID and Client secret using the command :SpotifyAuthorize",
+        vim.log.levels.WARN,
+        { title = "Spotify.nvim" }
+    )
 end
-
-return M
