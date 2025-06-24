@@ -9,7 +9,7 @@ local function open_browser(client_id, redirect_uri)
     local auth_url = string.format(
         "https://accounts.spotify.com/authorize?response_type=code&client_id=%s&scope=%s&redirect_uri=%s",
         client_id,
-        "user-modify-playback-state",
+        Utils.url_encode("user-modify-playback-state user-read-playback-state"),
         Utils.url_encode(redirect_uri)
     )
 
