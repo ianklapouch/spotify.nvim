@@ -1,5 +1,6 @@
 local Authorize = require("spotify.commands.authorize")
 local PlayerCommands = require("spotify.commands.player")
+local SearchCommands = require("spotify.commands.search")
 
 ---@class CommandsHandler
 local CommandsHandler = {}
@@ -24,6 +25,9 @@ function CommandsHandler.register_commands()
         { desc = "Get Spotify currently playing track" })
     vim.api.nvim_create_user_command("SpotifyShowCurrentQueue", PlayerCommands.get_queue,
         { desc = "Get Spotify currently playing track" })
+
+    --- Search commands
+    vim.api.nvim_create_user_command("SpotifySearchTrack", SearchCommands.search_track, { desc = "Search Spotify track" })
 
 
 

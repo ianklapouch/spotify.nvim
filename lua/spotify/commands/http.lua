@@ -32,19 +32,18 @@ local function request(method, endpoint, body, callback)
                 })
         end
 
-        vim.notify("cmd: " .. vim.inspect(cmd), vim.log.levels.INFO)
         vim.system(cmd, { text = true }, function(result)
             local body_response, code_str = result.stdout:match("^(.*)(%d%d%d)$")
             local code = tonumber(code_str)
             local isSuccess = code and code >= 200 and code < 300
 
-            if isSuccess then
-                vim.notify("✅ Spotify API retornou código: " .. code, vim.log.levels.INFO)
-                vim.notify("✅ Resposta: " .. (result.stdout or "desconhecido"), vim.log.levels.INFO)
-            else
-                vim.notify("❌ Spotify API retornou código: " .. (code or "desconhecido"), vim.log.levels.ERROR)
-                vim.notify("❌ Resposta: " .. (result.stdout or "desconhecido"), vim.log.levels.ERROR)
-            end
+            -- if isSuccess then
+            --     vim.notify("✅ Spotify API retornou código: " .. code, vim.log.levels.INFO)
+            --     vim.notify("✅ Resposta: " .. (result.stdout or "desconhecido"), vim.log.levels.INFO)
+            -- else
+            --     vim.notify("❌ Spotify API retornou código: " .. (code or "desconhecido"), vim.log.levels.ERROR)
+            --     vim.notify("❌ Resposta: " .. (result.stdout or "desconhecido"), vim.log.levels.ERROR)
+            -- end
 
             if callback then callback(isSuccess, code, body_response) end
 

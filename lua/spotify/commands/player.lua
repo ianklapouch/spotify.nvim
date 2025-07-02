@@ -20,6 +20,7 @@ end
 function PlayerCommands.get_available_devices()
     local endpoint = "me/player/devices"
     Http.get(endpoint, function(success, code, response)
+        vim.notify("Devices: " .. vim.inspect(response), vim.log.levels.INFO)
     end)
 end
 
@@ -60,15 +61,15 @@ function PlayerCommands.play()
     end)
 end
 
-function PlayerCommands.play_track(track_uri)
+function PlayerCommands.play_track(item)
     local endpoint = "me/player/play"
     local body = {
         "-d",
-        '{"uris": ["' .. track_uri .. '"]}'
+        '{"uris": ["' .. item.value .. '"]}'
     }
     Http.put(endpoint, body, function(isSuccess, code, _)
         if isSuccess then
-            PlayerCommands.get_currently_playing_track("🎵 Now playing: ")
+            vim.notify("🎵 Now playing: " .. item.text, vim.log.levels.INFO, { title = "Spotify.nvim" })
         elseif code == 404 then
             vim.notify("No Active Device!", vim.log.levels.ERROR, { title = "Spotify.nvim" })
         end
@@ -125,7 +126,6 @@ function PlayerCommands.set_volume()
     })
 
     if volume == nil then
-        vim.notify("Invalid value for volume1", vim.log.levels.ERROR)
         return
     end
 
@@ -133,7 +133,6 @@ function PlayerCommands.set_volume()
     volume = math.floor(volume)
 
     if volume < 0 or volume > 100 then
-        vim.notify("Invalid value for volume2", vim.log.levels.ERROR)
         return
     end
 
@@ -210,7 +209,7 @@ function PlayerCommands.get_queue()
                         picker:close()
                         if item then
                             vim.notify("✅ Playing: " .. item.value, vim.log.levels.INFO, { title = "Spotify.nvim" })
-                            PlayerCommands.play_track(item.value)
+                            PlayerCommands.play_track(item)
                             -- vim.api.nvim_command(":silent! Prosession " .. item.label)
                         end
                     end,
