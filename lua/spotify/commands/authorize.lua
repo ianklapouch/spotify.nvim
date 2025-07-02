@@ -1,6 +1,7 @@
 local Credentials = require("spotify.credentials.credentials")
 local CredentialsHandler = require("spotify.credentials.handler")
 local TokenHandler = require("spotify.token.handler")
+local Notify = require("spotify.notify")
 
 ---@class Authorize
 local Authorize = {}
@@ -21,7 +22,7 @@ function Authorize.run()
     })
 
     if client_id == nil or client_secret == nil then
-        vim.notify("❌ Falha ao autenticar", vim.log.levels.ERROR)
+        Notify.error("Falha ao autenticar")
         return
     end
 

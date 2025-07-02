@@ -1,3 +1,4 @@
+local Notify = require("spotify.notify")
 local snacks = require("snacks")
 local Http = require("spotify.commands.http")
 
@@ -20,7 +21,7 @@ end
 function PlayerCommands.get_available_devices()
     local endpoint = "me/player/devices"
     Http.get(endpoint, function(success, code, response)
-        vim.notify("Devices: " .. vim.inspect(response), vim.log.levels.INFO)
+        Notify.info("Devices: " .. vim.inspect(response))
     end)
 end
 
@@ -35,7 +36,7 @@ function PlayerCommands.get_currently_playing_track(action)
             local artist_name = data.item.artists[1].name or "Unknown Artist"
 
             if action ~= nil and type(action) == "string" then
-                vim.notify(action .. track_name .. " - " .. artist_name, vim.log.levels.INFO, { title = "Spotify.nvim" })
+                Notify.info(action .. track_name .. " - " .. artist_name)
             else
                 local message = string.format(
                     "🎤 Artist: %s\n🎵 Track: %s\n💿 Album: %s",
@@ -43,7 +44,7 @@ function PlayerCommands.get_currently_playing_track(action)
                     track_name,
                     album_name
                 )
-                vim.notify(message, vim.log.levels.INFO, { title = "Spotify.nvim" })
+                Notify.info(message)
             end
         end
     end)
@@ -56,7 +57,7 @@ function PlayerCommands.play()
         if isSuccess then
             PlayerCommands.get_currently_playing_track("🎵 Now playing: ")
         elseif code == 404 then
-            vim.notify("No Active Device!", vim.log.levels.ERROR, { title = "Spotify.nvim" })
+            Notify.error("No Active Device!")
         end
     end)
 end
@@ -69,9 +70,9 @@ function PlayerCommands.play_track(item)
     }
     Http.put(endpoint, body, function(isSuccess, code, _)
         if isSuccess then
-            vim.notify("🎵 Now playing: " .. item.text, vim.log.levels.INFO, { title = "Spotify.nvim" })
+            Notify.info("🎵 Now playing: " .. item.text)
         elseif code == 404 then
-            vim.notify("No Active Device!", vim.log.levels.ERROR, { title = "Spotify.nvim" })
+            Notify.error("No Active Device!")
         end
     end)
 end
@@ -139,7 +140,7 @@ function PlayerCommands.set_volume()
     local endpoint = "me/player/volume?volume_percent=" .. volume
     Http.put(endpoint, nil, function(isSuccess)
         if isSuccess then
-            vim.notify("Volume set to " .. volume .. "%", vim.log.levels.INFO)
+            Notify.info("Volume set to " .. volume .. "%")
         end
     end)
 end
@@ -200,15 +201,10 @@ function PlayerCommands.get_queue()
                     layout = {
                         preview = false
                     },
-                    -- on_choice = function(item)
-                    --     if item and item.value then
-                    --         vim.notify("✅ Playing: " .. item.value, vim.log.levels.INFO, { title = "Spotify.nvim" })
-                    --     end
-                    -- end,
                     confirm = function(picker, item)
                         picker:close()
                         if item then
-                            vim.notify("✅ Playing: " .. item.value, vim.log.levels.INFO, { title = "Spotify.nvim" })
+                            Notify.info("✅ Playing: " .. item.value)
                             PlayerCommands.play_track(item)
                             -- vim.api.nvim_command(":silent! Prosession " .. item.label)
                         end

@@ -1,6 +1,7 @@
 local PlayerCommands = require("spotify.commands.player")
 local Http = require("spotify.commands.http")
 local UI = require("lua.spotify.ui")
+local Notify = require("spotify.notify")
 
 ---@class SearchCommands
 local SearchCommands = {}
@@ -14,7 +15,7 @@ function SearchCommands.search_track()
     })
 
     if query_raw == nil then
-        vim.notify("Invalid value for query", vim.log.levels.ERROR)
+        Notify.error("Invalid value for query")
         return
     end
 

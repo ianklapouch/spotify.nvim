@@ -1,3 +1,4 @@
+local Notify = require("spotify.notify")
 local TokenHandler = require("spotify.token.handler")
 
 ---@param callback function
@@ -46,18 +47,10 @@ local function make_request(method, endpoint, body, token, callback)
             local code = tonumber(code_str)
             local isSuccess = code and code >= 200 and code < 300
 
-            -- if isSuccess then
-            --     vim.notify("✅ Spotify API retornou código: " .. code, vim.log.levels.INFO)
-            --     vim.notify("✅ Resposta: " .. (result.stdout or "desconhecido"), vim.log.levels.INFO)
-            -- else
-            --     vim.notify("❌ Spotify API retornou código: " .. (code or "desconhecido"), vim.log.levels.ERROR)
-            --     vim.notify("❌ Resposta: " .. (result.stdout or "desconhecido"), vim.log.levels.ERROR)
-            -- end
-
             if callback then callback(isSuccess, code, body_response) end
 
             if result.stderr and result.stderr ~= "" then
-                vim.notify("⚠️ Erro no curl: " .. result.stderr, vim.log.levels.WARN)
+                Notify.error("Erro no curl: " .. result.stderr)
             end
         end)
     end

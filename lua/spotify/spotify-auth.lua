@@ -14,10 +14,7 @@ local function open_browser(client_id, redirect_uri)
     )
 
     local cmd
-    vim.notify("client_id: " .. client_id, vim.log.levels.INFO)
-    vim.notify("redirect_uri: " .. redirect_uri, vim.log.levels.INFO)
-    vim.notify("Utils.url_encode(redirect_uri): " .. Utils.url_encode(redirect_uri), vim.log.levels.INFO)
-    vim.notify("auth_url: " .. auth_url, vim.log.levels.INFO)
+
     if vim.fn.has("win32") == 1 then
         cmd = { "cmd", "/c", 'start "" "' .. auth_url .. '"' }
     elseif vim.fn.has("mac") == 1 then
@@ -26,7 +23,6 @@ local function open_browser(client_id, redirect_uri)
         cmd = { "xdg-open", auth_url }
     end
 
-    vim.notify("cmd: " .. table.concat(cmd, " "), vim.log.levels.INFO)
     vim.fn.jobstart(cmd, { detach = true })
 end
 
@@ -54,7 +50,6 @@ local function exchange_code(code, client_id, client_secret, redirect_uri, callb
         },
         callback = function(response)
             if response.status ~= 200 then
-                vim.notify("Erro na API", vim.log.levels.ERROR)
                 return callback(nil, response)
             end
             local _, data = pcall(vim.json.decode, response.body)
@@ -64,16 +59,13 @@ local function exchange_code(code, client_id, client_secret, redirect_uri, callb
 end
 
 local function start_auth_server(client_id, client_secret, redirect_uri, callback)
-    vim.notify("start_auth_server", vim.log.levels.INFO)
     local uri = Utils.parse_uri(redirect_uri)
 
     local server = vim.loop.new_tcp()
     server:bind(uri.host, uri.port)
 
     server:listen(128, function(err)
-        vim.notify("listening", vim.log.levels.INFO)
         if err then
-            vim.notify("Erro no servidor: " .. err, vim.log.levels.ERROR)
             return
         end
 
@@ -133,11 +125,8 @@ function M.authenticate(credentials, callback)
     local server = start_auth_server(credentials.client_id, credentials.client_secret, redirect_uri, callback)
     open_browser(credentials.client_id, redirect_uri)
 
-    vim.notify("Aguardando autenticação em: " .. redirect_uri, vim.log.levels.INFO)
-
     return function()
         if server and not server:is_closing() then
-            vim.notify("close server", vim.log.levels.INFO)
             server:close()
         end
     end

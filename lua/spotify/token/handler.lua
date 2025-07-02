@@ -1,5 +1,6 @@
 local CredentialsHandler = require("spotify.credentials.handler")
 local Utils = require("spotify.utils")
+local Notify = require("spotify.notify")
 local spotify_auth = require("spotify.spotify-auth")
 local cache_dir = Utils.join_path(vim.fn.stdpath('cache'), 'spotify.nvim')
 local token_path = Utils.join_path(cache_dir, 'token.json')
@@ -47,11 +48,8 @@ function TokenHandler.generate_token(callback)
             end
         end)
     else
-        vim.notify(
-            "Incomplete configuration, enter your Client ID and Client secret using the command :SpotifyAuthenticate",
-            vim.log.levels.WARN,
-            { title = "Spotify.nvim" }
-        )
+        Notify.warn(
+        "Incomplete configuration, enter your Client ID and Client secret using the command :SpotifyAuthenticate")
     end
     return nil
 end
