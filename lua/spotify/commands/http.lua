@@ -1,16 +1,25 @@
 local TokenHandler = require("spotify.token.handler")
 
+---@param callback function
+local function ensure_token(callback)
+    local token = TokenHandler.get_token()
+    if token then
+        callback(token)
+    else
+        TokenHandler.generate_token(function(new_token)
+            if new_token then
+                callback(new_token)
+            end
+        end)
+    end
+end
+
 --- @param method string
 --- @param endpoint string
 --- @param body table | nil
+--- @param token Token
 --- @param callback function
-local function request(method, endpoint, body, callback)
-    local token = TokenHandler.get_token()
-
-    if token == nil then
-        token = TokenHandler.generate_token()
-    end
-
+local function make_request(method, endpoint, body, token, callback)
     if token then
         local cmd = {
             "curl",
@@ -54,6 +63,15 @@ local function request(method, endpoint, body, callback)
     end
 end
 
+--- @param method string
+--- @param endpoint string
+--- @param body table | nil
+--- @param callback function
+local function request(method, endpoint, body, callback)
+    ensure_token(function(token)
+        make_request(method, endpoint, body, token, callback)
+    end)
+end
 
 ---@class Http
 local Http = {}

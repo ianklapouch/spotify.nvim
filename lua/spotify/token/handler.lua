@@ -36,14 +36,14 @@ function TokenHandler.store_token(token)
 end
 
 ---@return Token | nil
-function TokenHandler.generate_token()
+function TokenHandler.generate_token(callback)
     local credentials = CredentialsHandler.get_credentials()
     if credentials ~= nil then
         spotify_auth.authenticate(credentials, function(token)
             if token ~= nil then
                 token.created_at = os.time()
                 TokenHandler.store_token(token)
-                return token
+                if callback then callback(token) end
             end
         end)
     else
