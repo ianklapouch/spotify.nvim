@@ -1,6 +1,6 @@
 local PlayerCommands = require("spotify.commands.player")
 local Http = require("spotify.commands.http")
-local UI = require("spotify.commands.ui")
+local UI = require("lua.spotify.ui")
 
 ---@class SearchCommands
 local SearchCommands = {}
