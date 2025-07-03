@@ -27,7 +27,8 @@ function CommandsHandler.register_commands()
         { desc = "Get Spotify currently playing track" })
 
     --- Search commands
-    vim.api.nvim_create_user_command("SpotifySearchTrack", SearchCommands.search_track, { desc = "Search Spotify track" })
+    vim.api.nvim_create_user_command("SpotifySearch", SearchCommands.search_track,
+        { desc = "Search Spotify track, artist or album" })
 
 
 

@@ -58,4 +58,13 @@ function Utils.parse_uri(uri)
     return Uri:new(protocol, host, port, path)
 end
 
+---@param str string
+---@param width number
+---@return string
+function Utils.pad_right(str, width)
+    local current = vim.fn.strdisplaywidth(str)
+    local pad = math.max(0, width - current)
+    return str .. string.rep(" ", pad)
+end
+
 return Utils
